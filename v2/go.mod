@@ -21,6 +21,7 @@ require (
 	github.com/projectdiscovery/retryabledns v1.0.5
 	github.com/projectdiscovery/retryablehttp-go v1.0.1
 	github.com/remeh/sizedwaitgroup v1.0.0
+	github.com/rs/zerolog v1.20.0
 	github.com/segmentio/ksuid v1.0.3
 	github.com/spaolacci/murmur3 v1.1.0
 	github.com/stretchr/testify v1.5.1
