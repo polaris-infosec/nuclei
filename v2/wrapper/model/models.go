@@ -3,7 +3,7 @@ package model
 import "time"
 
 type Target struct {
-	ID        string    `json:"id" gorm:"primaryKey"`
+	ID        string    `json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 
@@ -12,7 +12,7 @@ type Target struct {
 }
 
 type Vulnerability struct {
-	ID        string    `json:"id" gorm:"primaryKey"`
+	ID        string    `json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 
@@ -28,7 +28,7 @@ type Vulnerability struct {
 }
 
 type Job struct {
-	ID        string    `json:"id" gorm:"primaryKey"`
+	ID        string    `json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 
