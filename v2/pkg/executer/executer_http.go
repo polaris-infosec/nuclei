@@ -694,6 +694,11 @@ func (e *HTTPExecuter) setCustomHeaders(r *requests.HTTPRequest) {
 			headerName = strings.TrimSpace(headerName)
 			headerValue = strings.TrimSpace(headerValue)
 			r.Request.Header[headerName] = []string{headerValue}
+
+			// KOL: Update Host header, based on user provided value
+			if headerName == "Host" {
+				r.Request.Host = headerValue
+			}
 		}
 	}
 }

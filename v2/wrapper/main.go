@@ -7,26 +7,27 @@ import (
 )
 
 type NucleiOption struct {
-	Target string
-	Templates []string
-	Debug bool
-	Timeout int
-	JSON bool
+	Target            string
+	Templates         []string
+	Debug             bool
+	Timeout           int
+	JSON              bool
 	EnableProgressBar bool
-	Output string
-	CustomHeaders []string
+	Output            string
+	CustomHeaders     []string
+	ProxyURL          string
 }
 
 func RunNuclei(opts *NucleiOption) error {
 	options := &runner.Options{
-		Target: opts.Target,
-		Templates: opts.Templates,
-		Debug: opts.Debug,
-		Timeout: opts.Timeout,
-		JSON: opts.JSON,
+		Target:            opts.Target,
+		Templates:         opts.Templates,
+		Timeout:           opts.Timeout,
+		JSON:              opts.JSON,
 		EnableProgressBar: opts.EnableProgressBar,
-		Output: opts.Output,
-		CustomHeaders: opts.CustomHeaders,
+		Output:            opts.Output,
+		CustomHeaders:     opts.CustomHeaders,
+		ProxyURL:          opts.ProxyURL,
 	}
 
 	nucleiRunner, err := runner.New(options)
