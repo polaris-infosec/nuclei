@@ -14,6 +14,7 @@ type NucleiOption struct {
 	JSON bool
 	EnableProgressBar bool
 	Output string
+	CustomHeaders []string
 }
 
 func RunNuclei(opts *NucleiOption) error {
@@ -25,6 +26,7 @@ func RunNuclei(opts *NucleiOption) error {
 		JSON: opts.JSON,
 		EnableProgressBar: opts.EnableProgressBar,
 		Output: opts.Output,
+		CustomHeaders: opts.CustomHeaders,
 	}
 
 	nucleiRunner, err := runner.New(options)
