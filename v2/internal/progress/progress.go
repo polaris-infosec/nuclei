@@ -12,13 +12,20 @@ import (
 
 // Progress is a progress instance for showing program stats
 type Progress struct {
-	active       bool
-	stats        clistats.StatisticsClient
-	tickDuration time.Duration
+	active          bool
+	stats           clistats.StatisticsClient
+	tickDuration    time.Duration
+	progressChannel chan ProgressEvent
+	isDone          bool
+}
+
+type ProgressEvent struct {
+	Requests uint64
+	Total    uint64
 }
 
 // NewProgress creates and returns a new progress tracking object.
-func NewProgress(active bool) *Progress {
+func NewProgress(active bool, eventChannel chan ProgressEvent) *Progress {
 	var tickDuration time.Duration
 	if active {
 		tickDuration = 5 * time.Second
@@ -35,6 +42,7 @@ func NewProgress(active bool) *Progress {
 		progress.active = active
 		progress.stats = stats
 		progress.tickDuration = tickDuration
+		progress.progressChannel = eventChannel
 	}
 
 	return &progress
@@ -49,7 +57,7 @@ func (p *Progress) Init(hostCount int64, rulesCount int, requestCount int64) {
 		p.stats.AddCounter("requests", uint64(0))
 		p.stats.AddCounter("errors", uint64(0))
 		p.stats.AddCounter("total", uint64(requestCount))
-		if err := p.stats.Start(makePrintCallback(), p.tickDuration); err != nil {
+		if err := p.stats.Start(p.makePrintCallback(), p.tickDuration); err != nil {
 			gologger.Warningf("Couldn't start statistics: %s\n", err)
 		}
 	}
@@ -80,7 +88,7 @@ func (p *Progress) Drop(count int64) {
 
 const bufferSize = 128
 
-func makePrintCallback() func(stats clistats.StatisticsClient) {
+func (p *Progress) makePrintCallback() func(stats clistats.StatisticsClient) {
 	builder := &strings.Builder{}
 	builder.Grow(bufferSize)
 
@@ -120,6 +128,13 @@ func makePrintCallback() func(stats clistats.StatisticsClient) {
 		builder.WriteRune(')')
 		builder.WriteRune('\n')
 
+		if !p.isDone {
+			p.progressChannel <- ProgressEvent{
+				Requests: requests,
+				Total:    total,
+			}
+		}
+
 		fmt.Fprintf(os.Stderr, "%s", builder.String())
 		builder.Reset()
 	}
@@ -142,5 +157,7 @@ func (p *Progress) Stop() {
 		if err := p.stats.Stop(); err != nil {
 			gologger.Warningf("Couldn't stop statistics: %s\n", err)
 		}
+		close(p.progressChannel)
+		p.isDone = true
 	}
 }

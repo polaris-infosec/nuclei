@@ -1,6 +1,7 @@
 package wrapper
 
 import (
+	"github.com/projectdiscovery/nuclei/v2/internal/progress"
 	"github.com/projectdiscovery/nuclei/v2/internal/runner"
 	"github.com/rs/zerolog/log"
 )
@@ -17,7 +18,12 @@ type NucleiOption struct {
 	ProxyURL          string
 }
 
-func RunNuclei(opts *NucleiOption) error {
+type ProgressEvent struct {
+	Requests uint64
+	Total    uint64
+}
+
+func RunNuclei(opts *NucleiOption) (chan progress.ProgressEvent, error) {
 	options := &runner.Options{
 		Target:            opts.Target,
 		Templates:         opts.Templates,
@@ -32,11 +38,13 @@ func RunNuclei(opts *NucleiOption) error {
 	nucleiRunner, err := runner.New(options)
 	if err != nil {
 		log.Info().Msgf("Could not create runner: %s\n", err)
-		return err
+		return nil, err
 	}
 
-	nucleiRunner.RunEnumeration()
-	nucleiRunner.Close()
+	go func() {
+		nucleiRunner.RunEnumeration()
+		nucleiRunner.Close()
+	}()
 
-	return nil
+	return nucleiRunner.EventChannel, nil
 }
