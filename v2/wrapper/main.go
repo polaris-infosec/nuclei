@@ -1,7 +1,6 @@
 package wrapper
 
 import (
-	"fmt"
 	"github.com/projectdiscovery/nuclei/v2/internal/runner"
 	"github.com/rs/zerolog/log"
 )
@@ -32,7 +31,7 @@ func RunNuclei(opts *NucleiOption) error {
 
 	nucleiRunner, err := runner.New(options)
 	if err != nil {
-		log.Info().Msg(fmt.Sprintf("Could not create runner: %s\n", err))
+		log.Info().Msgf("Could not create runner: %s\n", err)
 		return err
 	}
 
