@@ -46,5 +46,5 @@ func RunNuclei(opts *NucleiOption) (chan progress.ProgressEvent, error) {
 		nucleiRunner.Close()
 	}()
 
-	return nucleiRunner.EventChannel, nil
+	return nucleiRunner.ProgressEventChannel, nil
 }

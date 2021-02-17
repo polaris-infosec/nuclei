@@ -54,7 +54,7 @@ type Runner struct {
 	dialer *fastdialer.Dialer
 
 	// event channel
-	EventChannel chan progress.ProgressEvent
+	ProgressEventChannel chan progress.ProgressEvent
 }
 
 // New creates a new client for running enumeration process.
@@ -176,8 +176,8 @@ func New(options *Options) (*Runner, error) {
 	}
 
 	// Creates the progress tracking object
-	runner.EventChannel = make(chan progress.ProgressEvent)
-	runner.progress = progress.NewProgress(options.EnableProgressBar, runner.EventChannel)
+	runner.ProgressEventChannel = make(chan progress.ProgressEvent)
+	runner.progress = progress.NewProgress(options.EnableProgressBar, runner.ProgressEventChannel)
 
 	// create project file if requested or load existing one
 	if options.Project {

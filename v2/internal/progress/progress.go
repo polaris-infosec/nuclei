@@ -2,12 +2,12 @@ package progress
 
 import (
 	"fmt"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/projectdiscovery/clistats"
 	"github.com/projectdiscovery/gologger"
+	"os"
+	"strings"
+	"sync"
+	"time"
 )
 
 // Progress is a progress instance for showing program stats
@@ -16,6 +16,7 @@ type Progress struct {
 	stats           clistats.StatisticsClient
 	tickDuration    time.Duration
 	progressChannel chan ProgressEvent
+	statusLock      sync.Mutex
 	isDone          bool
 }
 
@@ -128,12 +129,14 @@ func (p *Progress) makePrintCallback() func(stats clistats.StatisticsClient) {
 		builder.WriteRune(')')
 		builder.WriteRune('\n')
 
+		p.statusLock.Lock()
 		if !p.isDone {
 			p.progressChannel <- ProgressEvent{
 				Requests: requests,
 				Total:    total,
 			}
 		}
+		p.statusLock.Unlock()
 
 		fmt.Fprintf(os.Stderr, "%s", builder.String())
 		builder.Reset()
@@ -157,7 +160,10 @@ func (p *Progress) Stop() {
 		if err := p.stats.Stop(); err != nil {
 			gologger.Warningf("Couldn't stop statistics: %s\n", err)
 		}
+
+		p.statusLock.Lock()
 		close(p.progressChannel)
 		p.isDone = true
+		p.statusLock.Unlock()
 	}
 }
