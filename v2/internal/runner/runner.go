@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"github.com/projectdiscovery/nuclei/v2/wrapper/types"
 	"os"
 	"regexp"
 	"strings"
@@ -53,8 +54,7 @@ type Runner struct {
 	hm     *hybrid.HybridMap
 	dialer *fastdialer.Dialer
 
-	// event channel
-	ProgressEventChannel chan progress.ProgressEvent
+	KOLEventChannel *types.KOLEventChannel
 }
 
 // New creates a new client for running enumeration process.
@@ -175,9 +175,12 @@ func New(options *Options) (*Runner, error) {
 		runner.output = output
 	}
 
-	// Creates the progress tracking object
-	runner.ProgressEventChannel = make(chan progress.ProgressEvent)
-	runner.progress = progress.NewProgress(options.EnableProgressBar, runner.ProgressEventChannel)
+	// KOL: Creates the progress tracking object
+	runner.KOLEventChannel = &types.KOLEventChannel{
+		Progress: make(chan types.ProgressEvent),
+		JsonOutput: make(chan []byte),
+	}
+	runner.progress = progress.NewProgress(options.EnableProgressBar, runner.KOLEventChannel.Progress)
 
 	// create project file if requested or load existing one
 	if options.Project {
@@ -306,6 +309,9 @@ func (r *Runner) RunEnumeration() {
 
 		wgtemplates.Wait()
 		p.Stop()
+
+		// KOL: close json output channel
+		close(r.KOLEventChannel.JsonOutput)
 	}
 
 	if !results.Get() {

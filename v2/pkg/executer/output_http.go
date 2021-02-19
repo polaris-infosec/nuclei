@@ -1,6 +1,7 @@
 package executer
 
 import (
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -61,6 +62,12 @@ func (e *HTTPExecuter) writeOutputHTTP(req *requests.HTTPRequest, resp *http.Res
 		}
 
 		data, err := jsoniter.Marshal(output)
+
+		// KOL: send json data to output channel
+		log.Info().Msg("aaaaaaaaaaaaa begin send")
+		e.outputChannel <- data
+		log.Info().Msg("aaaaaaaaaaaaa end send")
+
 		if err != nil {
 			gologger.Warningf("Could not marshal json output: %s\n", err)
 		}

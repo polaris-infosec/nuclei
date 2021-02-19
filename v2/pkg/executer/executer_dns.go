@@ -37,6 +37,9 @@ type DNSExecuter struct {
 
 	colorizer   colorizer.NucleiColorizer
 	decolorizer *regexp.Regexp
+
+	// KOL: used to send output to KOL
+	outputChannel chan []byte
 }
 
 // DefaultResolvers contains the list of resolvers known to be trusted.
@@ -59,9 +62,10 @@ type DNSOptions struct {
 	DNSRequest    *requests.DNSRequest
 	Writer        *bufwriter.Writer
 
-	Colorizer   colorizer.NucleiColorizer
-	Decolorizer *regexp.Regexp
-	RateLimiter ratelimit.Limiter
+	Colorizer     colorizer.NucleiColorizer
+	Decolorizer   *regexp.Regexp
+	RateLimiter   ratelimit.Limiter
+	OutputChannel chan []byte
 }
 
 // NewDNSExecuter creates a new DNS executer from a template
@@ -83,6 +87,7 @@ func NewDNSExecuter(options *DNSOptions) *DNSExecuter {
 		colorizer:     options.Colorizer,
 		decolorizer:   options.Decolorizer,
 		ratelimiter:   options.RateLimiter,
+		outputChannel: options.OutputChannel,
 	}
 
 	return executer

@@ -50,6 +50,7 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 			Colorizer:     r.colorizer,
 			Decolorizer:   r.decolorizer,
 			RateLimiter:   r.ratelimiter,
+			OutputChannel: r.KOLEventChannel.JsonOutput,
 		})
 	case *requests.BulkHTTPRequest:
 		httpExecuter, err = executer.NewHTTPExecuter(&executer.HTTPOptions{
@@ -74,6 +75,7 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 			PF:               r.pf,
 			Dialer:           r.dialer,
 			RateLimiter:      r.ratelimiter,
+			OutputChannel:    r.KOLEventChannel.JsonOutput,
 		})
 	}
 

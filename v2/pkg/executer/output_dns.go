@@ -37,6 +37,10 @@ func (e *DNSExecuter) writeOutputDNS(domain string, req, resp *dns.Msg, matcher 
 		}
 
 		data, err := jsoniter.Marshal(output)
+
+		// KOL: send json data to output channel
+		e.outputChannel <- data
+
 		if err != nil {
 			gologger.Warningf("Could not marshal json output: %s\n", err)
 		}
@@ -47,6 +51,7 @@ func (e *DNSExecuter) writeOutputDNS(domain string, req, resp *dns.Msg, matcher 
 				return
 			}
 		}
+
 		return
 	}
 

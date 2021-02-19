@@ -67,6 +67,9 @@ type HTTPExecuter struct {
 	noMeta           bool
 	stopAtFirstMatch bool
 	ratelimiter      ratelimit.Limiter
+
+	// KOL: used to send output to KOL
+	outputChannel chan []byte
 }
 
 // HTTPOptions contains configuration options for the HTTP executer.
@@ -93,6 +96,7 @@ type HTTPOptions struct {
 	PF               *projetctfile.ProjectFile
 	RateLimiter      ratelimit.Limiter
 	Dialer           *fastdialer.Dialer
+	OutputChannel    chan []byte
 }
 
 // NewHTTPExecuter creates a new HTTP executer from a template
@@ -148,6 +152,7 @@ func NewHTTPExecuter(options *HTTPOptions) (*HTTPExecuter, error) {
 		stopAtFirstMatch: options.StopAtFirstMatch,
 		pf:               options.PF,
 		ratelimiter:      options.RateLimiter,
+		outputChannel:    options.OutputChannel,
 	}
 
 	return executer, nil
@@ -380,6 +385,7 @@ func (e *HTTPExecuter) ExecuteHTTP(p *progress.Progress, reqURL string) *Result 
 		e.bulkHTTPRequest.Increment(reqURL)
 		remaining--
 	}
+
 	gologger.Verbosef("Sent for [%s] to %s\n", "http-request", e.template.ID, reqURL)
 	return result
 }

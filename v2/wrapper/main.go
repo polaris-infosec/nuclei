@@ -1,29 +1,12 @@
 package wrapper
 
 import (
-	"github.com/projectdiscovery/nuclei/v2/internal/progress"
 	"github.com/projectdiscovery/nuclei/v2/internal/runner"
+	"github.com/projectdiscovery/nuclei/v2/wrapper/types"
 	"github.com/rs/zerolog/log"
 )
 
-type NucleiOption struct {
-	Target            string
-	Templates         []string
-	Debug             bool
-	Timeout           int
-	JSON              bool
-	EnableProgressBar bool
-	Output            string
-	CustomHeaders     []string
-	ProxyURL          string
-}
-
-type ProgressEvent struct {
-	Requests uint64
-	Total    uint64
-}
-
-func RunNuclei(opts *NucleiOption) (chan progress.ProgressEvent, error) {
+func RunNuclei(opts *types.NucleiOption) (*types.KOLEventChannel, error) {
 	options := &runner.Options{
 		Target:            opts.Target,
 		Templates:         opts.Templates,
@@ -33,6 +16,11 @@ func RunNuclei(opts *NucleiOption) (chan progress.ProgressEvent, error) {
 		Output:            opts.Output,
 		CustomHeaders:     opts.CustomHeaders,
 		ProxyURL:          opts.ProxyURL,
+		Retries:           1,
+		RateLimit:         150,
+		BulkSize:          25,
+		TemplateThreads:   10,
+		JSONRequests:      true,
 	}
 
 	nucleiRunner, err := runner.New(options)
@@ -46,5 +34,5 @@ func RunNuclei(opts *NucleiOption) (chan progress.ProgressEvent, error) {
 		nucleiRunner.Close()
 	}()
 
-	return nucleiRunner.ProgressEventChannel, nil
+	return nucleiRunner.KOLEventChannel, nil
 }

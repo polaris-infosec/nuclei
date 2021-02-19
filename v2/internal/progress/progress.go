@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/projectdiscovery/clistats"
 	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/nuclei/v2/wrapper/types"
 	"os"
 	"strings"
 	"sync"
@@ -15,18 +16,13 @@ type Progress struct {
 	active          bool
 	stats           clistats.StatisticsClient
 	tickDuration    time.Duration
-	progressChannel chan ProgressEvent
+	progressChannel chan types.ProgressEvent
 	statusLock      sync.Mutex
 	isDone          bool
 }
 
-type ProgressEvent struct {
-	Requests uint64
-	Total    uint64
-}
-
 // NewProgress creates and returns a new progress tracking object.
-func NewProgress(active bool, eventChannel chan ProgressEvent) *Progress {
+func NewProgress(active bool, eventChannel chan types.ProgressEvent) *Progress {
 	var tickDuration time.Duration
 	if active {
 		tickDuration = 5 * time.Second
@@ -131,7 +127,7 @@ func (p *Progress) makePrintCallback() func(stats clistats.StatisticsClient) {
 
 		p.statusLock.Lock()
 		if !p.isDone {
-			p.progressChannel <- ProgressEvent{
+			p.progressChannel <- types.ProgressEvent{
 				Requests: requests,
 				Total:    total,
 			}
