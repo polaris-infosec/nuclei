@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"github.com/projectdiscovery/nuclei/v2/wrapper/types"
+	"github.com/rs/zerolog/log"
 	"os"
 	"regexp"
 	"strings"
@@ -298,37 +299,33 @@ func (r *Runner) RunEnumeration() {
 		p.Init(r.inputCount, templateCount, totalRequests)
 
 		for _, t := range availableTemplates {
-			select {
-			// KOL: allow cancelation while scanning
-			case <-r.Ctx.Done():
-				break
-			default:
-				wgtemplates.Add()
-				go func(template interface{}) {
-					defer wgtemplates.Done()
-					switch tt := template.(type) {
-					case *templates.Template:
-						for _, request := range tt.RequestsDNS {
-							select {
-							case <- r.Ctx.Done():
-								break
-							default:
-								results.Or(r.processTemplateWithList(p, tt, request))
-							}
+			wgtemplates.Add()
+			go func(template interface{}) {
+				defer wgtemplates.Done()
+				switch tt := template.(type) {
+				case *templates.Template:
+					for _, request := range tt.RequestsDNS {
+						select {
+						case <- r.Ctx.Done():
+							log.Info().Msgf("Skip runner request dns")
+							break
+						default:
+							results.Or(r.processTemplateWithList(p, tt, request))
 						}
-						for _, request := range tt.BulkRequestsHTTP {
-							select {
-							case <- r.Ctx.Done():
-								break
-							default:
-								results.Or(r.processTemplateWithList(p, tt, request))
-							}
-						}
-					case *workflows.Workflow:
-						results.Or(r.processWorkflowWithList(p, template.(*workflows.Workflow)))
 					}
-				}(t)
-			}
+					for _, request := range tt.BulkRequestsHTTP {
+						select {
+						case <- r.Ctx.Done():
+							log.Info().Msgf("Skip runner request http")
+							break
+						default:
+							results.Or(r.processTemplateWithList(p, tt, request))
+						}
+					}
+				case *workflows.Workflow:
+					results.Or(r.processWorkflowWithList(p, template.(*workflows.Workflow)))
+				}
+			}(t)
 		}
 
 		wgtemplates.Wait()

@@ -76,7 +76,10 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 			PF:               r.pf,
 			Dialer:           r.dialer,
 			RateLimiter:      r.ratelimiter,
+
+			// KOL: custom options
 			OutputChannel:    r.JsonOutputChannel,
+			Ctx:              r.Ctx,
 		})
 	}
 
@@ -93,13 +96,6 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 
 	r.hm.Scan(func(k, _ []byte) error {
 		URL := string(k)
-
-		select {
-		case <- r.Ctx.Done():
-			log.Info().Msg("aaaaaaaaaaaaaaa skip URL " + URL)
-			return nil
-		default:
-		}
 
 		wg.Add()
 		go func(URL string) {
@@ -149,7 +145,7 @@ func (r *Runner) processWorkflowWithList(p *progress.Progress, workflow *workflo
 		targetURL := string(k)
 
 		select {
-		case <- r.Ctx.Done():
+		case <-r.Ctx.Done():
 			log.Info().Msg("aaaaaaaaaaaaaaa skip " + targetURL)
 			return nil
 		default:

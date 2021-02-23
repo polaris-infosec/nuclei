@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"io"
 	"io/ioutil"
 	"net"
@@ -69,7 +70,8 @@ type HTTPExecuter struct {
 	ratelimiter      ratelimit.Limiter
 
 	// KOL: used to send output to KOL
-	outputChannel chan <- []byte
+	outputChannel chan<- []byte
+	ctx           context.Context
 }
 
 // HTTPOptions contains configuration options for the HTTP executer.
@@ -96,7 +98,10 @@ type HTTPOptions struct {
 	PF               *projetctfile.ProjectFile
 	RateLimiter      ratelimit.Limiter
 	Dialer           *fastdialer.Dialer
-	OutputChannel    chan <- []byte
+
+	// KOL: custom options
+	OutputChannel chan<- []byte
+	Ctx           context.Context
 }
 
 // NewHTTPExecuter creates a new HTTP executer from a template
@@ -152,7 +157,10 @@ func NewHTTPExecuter(options *HTTPOptions) (*HTTPExecuter, error) {
 		stopAtFirstMatch: options.StopAtFirstMatch,
 		pf:               options.PF,
 		ratelimiter:      options.RateLimiter,
-		outputChannel:    options.OutputChannel,
+
+		// KOL: options
+		outputChannel: options.OutputChannel,
+		ctx:           options.Ctx,
 	}
 
 	return executer, nil
@@ -392,6 +400,13 @@ func (e *HTTPExecuter) ExecuteHTTP(p *progress.Progress, reqURL string) *Result 
 }
 
 func (e *HTTPExecuter) handleHTTP(reqURL string, request *requests.HTTPRequest, dynamicvalues map[string]interface{}, result *Result, format string) error {
+	select {
+	case <- e.ctx.Done():
+		log.Info().Msg("Skip inside handleHTTP")
+		return errors.New("Canceled request")
+	default:
+	}
+
 	e.setCustomHeaders(request)
 
 	var (
