@@ -69,7 +69,7 @@ type HTTPExecuter struct {
 	ratelimiter      ratelimit.Limiter
 
 	// KOL: used to send output to KOL
-	outputChannel chan []byte
+	outputChannel chan <- []byte
 }
 
 // HTTPOptions contains configuration options for the HTTP executer.
@@ -96,7 +96,7 @@ type HTTPOptions struct {
 	PF               *projetctfile.ProjectFile
 	RateLimiter      ratelimit.Limiter
 	Dialer           *fastdialer.Dialer
-	OutputChannel    chan []byte
+	OutputChannel    chan <- []byte
 }
 
 // NewHTTPExecuter creates a new HTTP executer from a template
@@ -284,7 +284,7 @@ func (e *HTTPExecuter) ExecuteTurboHTTP(reqURL string) *Result {
 
 	// defaultMaxWorkers should be a sufficient value to keep queues always full
 	maxWorkers := defaultMaxWorkers
-	// in case the queue is bigger increase the workers
+	// in case the worker is bigger increase the workers
 	if pipeOptions.MaxPendingRequests > maxWorkers {
 		maxWorkers = pipeOptions.MaxPendingRequests
 	}
@@ -321,6 +321,7 @@ func (e *HTTPExecuter) ExecuteTurboHTTP(reqURL string) *Result {
 
 // ExecuteHTTP executes the HTTP request on a URL
 func (e *HTTPExecuter) ExecuteHTTP(p *progress.Progress, reqURL string) *Result {
+
 	// verify if pipeline was requested
 	if e.bulkHTTPRequest.Pipeline {
 		return e.ExecuteTurboHTTP(reqURL)

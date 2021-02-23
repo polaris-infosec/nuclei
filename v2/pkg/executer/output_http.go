@@ -60,14 +60,18 @@ func (e *HTTPExecuter) writeOutputHTTP(req *requests.HTTPRequest, resp *http.Res
 			}
 		}
 
-		data, err := jsoniter.Marshal(output)
-
 		// KOL: send json data to output channel
-		e.outputChannel <- data
+		returnedData, err := jsoniter.Marshal(output)
+		e.outputChannel <- returnedData
 
+		// remove output resquest/response before printing to console
+		output["request"] = ""
+		output["response"] = ""
+		data, err := jsoniter.Marshal(output)
 		if err != nil {
 			gologger.Warningf("Could not marshal json output: %s\n", err)
 		}
+
 		gologger.Silentf("%s", string(data))
 
 		if e.writer != nil {

@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"context"
 	"github.com/projectdiscovery/nuclei/v2/wrapper/types"
 	"os"
 	"regexp"
@@ -54,7 +55,10 @@ type Runner struct {
 	hm     *hybrid.HybridMap
 	dialer *fastdialer.Dialer
 
-	KOLEventChannel *types.KOLEventChannel
+	ProgressChannel   chan types.ProgressEvent
+	JsonOutputChannel chan []byte
+	Ctx               context.Context
+	Cancel            context.CancelFunc
 }
 
 // New creates a new client for running enumeration process.
@@ -176,11 +180,9 @@ func New(options *Options) (*Runner, error) {
 	}
 
 	// KOL: Creates the progress tracking object
-	runner.KOLEventChannel = &types.KOLEventChannel{
-		Progress: make(chan types.ProgressEvent),
-		JsonOutput: make(chan []byte),
-	}
-	runner.progress = progress.NewProgress(options.EnableProgressBar, runner.KOLEventChannel.Progress)
+	runner.ProgressChannel = make(chan types.ProgressEvent, 10)
+	runner.JsonOutputChannel = make(chan []byte, 10)
+	runner.progress = progress.NewProgress(options.EnableProgressBar, runner.ProgressChannel)
 
 	// create project file if requested or load existing one
 	if options.Project {
@@ -209,6 +211,9 @@ func New(options *Options) (*Runner, error) {
 		runner.ratelimiter = ratelimit.NewUnlimited()
 	}
 
+	// Create cancelable context
+	runner.Ctx, runner.Cancel = context.WithCancel(context.Background())
+
 	return runner, nil
 }
 
@@ -221,6 +226,9 @@ func (r *Runner) Close() {
 	if r.pf != nil {
 		r.pf.Close()
 	}
+
+	// KOL: close json output channel
+	close(r.JsonOutputChannel)
 }
 
 // RunEnumeration sets up the input layer for giving input nuclei.
@@ -290,28 +298,41 @@ func (r *Runner) RunEnumeration() {
 		p.Init(r.inputCount, templateCount, totalRequests)
 
 		for _, t := range availableTemplates {
-			wgtemplates.Add()
-			go func(template interface{}) {
-				defer wgtemplates.Done()
-				switch tt := template.(type) {
-				case *templates.Template:
-					for _, request := range tt.RequestsDNS {
-						results.Or(r.processTemplateWithList(p, tt, request))
+			select {
+			// KOL: allow cancelation while scanning
+			case <-r.Ctx.Done():
+				break
+			default:
+				wgtemplates.Add()
+				go func(template interface{}) {
+					defer wgtemplates.Done()
+					switch tt := template.(type) {
+					case *templates.Template:
+						for _, request := range tt.RequestsDNS {
+							select {
+							case <- r.Ctx.Done():
+								break
+							default:
+								results.Or(r.processTemplateWithList(p, tt, request))
+							}
+						}
+						for _, request := range tt.BulkRequestsHTTP {
+							select {
+							case <- r.Ctx.Done():
+								break
+							default:
+								results.Or(r.processTemplateWithList(p, tt, request))
+							}
+						}
+					case *workflows.Workflow:
+						results.Or(r.processWorkflowWithList(p, template.(*workflows.Workflow)))
 					}
-					for _, request := range tt.BulkRequestsHTTP {
-						results.Or(r.processTemplateWithList(p, tt, request))
-					}
-				case *workflows.Workflow:
-					results.Or(r.processWorkflowWithList(p, template.(*workflows.Workflow)))
-				}
-			}(t)
+				}(t)
+			}
 		}
 
 		wgtemplates.Wait()
 		p.Stop()
-
-		// KOL: close json output channel
-		close(r.KOLEventChannel.JsonOutput)
 	}
 
 	if !results.Get() {

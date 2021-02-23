@@ -6,7 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func RunNuclei(opts *types.NucleiOption) (*types.KOLEventChannel, error) {
+func RunNuclei(opts *types.NucleiOption) (*types.KOLNucleiRunner, error) {
 	options := &runner.Options{
 		Target:            opts.Target,
 		Templates:         opts.Templates,
@@ -34,5 +34,10 @@ func RunNuclei(opts *types.NucleiOption) (*types.KOLEventChannel, error) {
 		nucleiRunner.Close()
 	}()
 
-	return nucleiRunner.KOLEventChannel, nil
+	return &types.KOLNucleiRunner{
+		ProgressChannel:   nucleiRunner.ProgressChannel,
+		JsonOutputChannel: nucleiRunner.JsonOutputChannel,
+		Ctx:               nucleiRunner.Ctx,
+		Cancel:            nucleiRunner.Cancel,
+	}, nil
 }

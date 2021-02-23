@@ -16,13 +16,15 @@ type Progress struct {
 	active          bool
 	stats           clistats.StatisticsClient
 	tickDuration    time.Duration
-	progressChannel chan types.ProgressEvent
+
+	// KOL: custom fields
+	progressChannel chan<- types.ProgressEvent
 	statusLock      sync.Mutex
 	isDone          bool
 }
 
 // NewProgress creates and returns a new progress tracking object.
-func NewProgress(active bool, eventChannel chan types.ProgressEvent) *Progress {
+func NewProgress(active bool, eventChannel chan<- types.ProgressEvent) *Progress {
 	var tickDuration time.Duration
 	if active {
 		tickDuration = 5 * time.Second

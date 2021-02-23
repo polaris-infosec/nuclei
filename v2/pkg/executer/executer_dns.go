@@ -39,7 +39,7 @@ type DNSExecuter struct {
 	decolorizer *regexp.Regexp
 
 	// KOL: used to send output to KOL
-	outputChannel chan []byte
+	outputChannel chan <- []byte
 }
 
 // DefaultResolvers contains the list of resolvers known to be trusted.
@@ -65,7 +65,7 @@ type DNSOptions struct {
 	Colorizer     colorizer.NucleiColorizer
 	Decolorizer   *regexp.Regexp
 	RateLimiter   ratelimit.Limiter
-	OutputChannel chan []byte
+	OutputChannel chan <- []byte
 }
 
 // NewDNSExecuter creates a new DNS executer from a template

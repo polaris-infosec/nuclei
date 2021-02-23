@@ -1,13 +1,17 @@
 package types
 
+import "context"
+
 type ProgressEvent struct {
 	Requests uint64
 	Total    uint64
 }
 
-type KOLEventChannel struct {
-	Progress   chan ProgressEvent
-	JsonOutput chan []byte
+type KOLNucleiRunner struct {
+	ProgressChannel   chan ProgressEvent
+	JsonOutputChannel chan []byte
+	Ctx               context.Context
+	Cancel            context.CancelFunc
 }
 
 type NucleiOption struct {

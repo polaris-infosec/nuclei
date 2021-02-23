@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"net/http/cookiejar"
 	"os"
 	"path"
@@ -50,7 +51,7 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 			Colorizer:     r.colorizer,
 			Decolorizer:   r.decolorizer,
 			RateLimiter:   r.ratelimiter,
-			OutputChannel: r.KOLEventChannel.JsonOutput,
+			OutputChannel: r.JsonOutputChannel,
 		})
 	case *requests.BulkHTTPRequest:
 		httpExecuter, err = executer.NewHTTPExecuter(&executer.HTTPOptions{
@@ -75,7 +76,7 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 			PF:               r.pf,
 			Dialer:           r.dialer,
 			RateLimiter:      r.ratelimiter,
-			OutputChannel:    r.KOLEventChannel.JsonOutput,
+			OutputChannel:    r.JsonOutputChannel,
 		})
 	}
 
@@ -92,6 +93,14 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 
 	r.hm.Scan(func(k, _ []byte) error {
 		URL := string(k)
+
+		select {
+		case <- r.Ctx.Done():
+			log.Info().Msg("aaaaaaaaaaaaaaa skip URL " + URL)
+			return nil
+		default:
+		}
+
 		wg.Add()
 		go func(URL string) {
 			defer wg.Done()
@@ -138,6 +147,14 @@ func (r *Runner) processWorkflowWithList(p *progress.Progress, workflow *workflo
 
 	r.hm.Scan(func(k, _ []byte) error {
 		targetURL := string(k)
+
+		select {
+		case <- r.Ctx.Done():
+			log.Info().Msg("aaaaaaaaaaaaaaa skip " + targetURL)
+			return nil
+		default:
+		}
+
 		wg.Add()
 
 		go func(targetURL string) {
