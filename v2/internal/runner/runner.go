@@ -1,30 +1,29 @@
 package runner
 
 import (
-	"bufio"
-	"context"
-	"github.com/projectdiscovery/nuclei/v2/wrapper/types"
-	"github.com/rs/zerolog/log"
-	"os"
-	"regexp"
-	"strings"
+  "bufio"
+  "context"
+  "github.com/projectdiscovery/nuclei/v2/wrapper/types"
+  "os"
+  "regexp"
+  "strings"
 
-	"github.com/logrusorgru/aurora"
-	"github.com/pkg/errors"
-	"github.com/projectdiscovery/fastdialer/fastdialer"
-	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/hmap/store/hybrid"
-	"github.com/projectdiscovery/nuclei/v2/internal/bufwriter"
-	"github.com/projectdiscovery/nuclei/v2/internal/progress"
-	"github.com/projectdiscovery/nuclei/v2/internal/tracelog"
-	"github.com/projectdiscovery/nuclei/v2/pkg/atomicboolean"
-	"github.com/projectdiscovery/nuclei/v2/pkg/collaborator"
-	"github.com/projectdiscovery/nuclei/v2/pkg/colorizer"
-	"github.com/projectdiscovery/nuclei/v2/pkg/projectfile"
-	"github.com/projectdiscovery/nuclei/v2/pkg/templates"
-	"github.com/projectdiscovery/nuclei/v2/pkg/workflows"
-	"github.com/remeh/sizedwaitgroup"
-	"go.uber.org/ratelimit"
+  "github.com/logrusorgru/aurora"
+  "github.com/pkg/errors"
+  "github.com/projectdiscovery/fastdialer/fastdialer"
+  "github.com/projectdiscovery/gologger"
+  "github.com/projectdiscovery/hmap/store/hybrid"
+  "github.com/projectdiscovery/nuclei/v2/internal/bufwriter"
+  "github.com/projectdiscovery/nuclei/v2/internal/progress"
+  "github.com/projectdiscovery/nuclei/v2/internal/tracelog"
+  "github.com/projectdiscovery/nuclei/v2/pkg/atomicboolean"
+  "github.com/projectdiscovery/nuclei/v2/pkg/collaborator"
+  "github.com/projectdiscovery/nuclei/v2/pkg/colorizer"
+  "github.com/projectdiscovery/nuclei/v2/pkg/projectfile"
+  "github.com/projectdiscovery/nuclei/v2/pkg/templates"
+  "github.com/projectdiscovery/nuclei/v2/pkg/workflows"
+  "github.com/remeh/sizedwaitgroup"
+  "go.uber.org/ratelimit"
 )
 
 // Runner is a client for running the enumeration process.
@@ -307,7 +306,7 @@ func (r *Runner) RunEnumeration() {
 					for _, request := range tt.RequestsDNS {
 						select {
 						case <- r.Ctx.Done():
-							log.Info().Msgf("Skip runner request dns")
+							//log.Info().Msgf("Skip runner request dns")
 							break
 						default:
 							results.Or(r.processTemplateWithList(p, tt, request))
@@ -316,7 +315,7 @@ func (r *Runner) RunEnumeration() {
 					for _, request := range tt.BulkRequestsHTTP {
 						select {
 						case <- r.Ctx.Done():
-							log.Info().Msgf("Skip runner request http")
+							//log.Info().Msgf("Skip runner request http")
 							break
 						default:
 							results.Or(r.processTemplateWithList(p, tt, request))

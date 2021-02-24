@@ -1,42 +1,41 @@
 package executer
 
 import (
-	"bytes"
-	"context"
-	"crypto/tls"
-	"fmt"
-	"github.com/rs/zerolog/log"
-	"io"
-	"io/ioutil"
-	"net"
-	"net/http"
-	"net/http/cookiejar"
-	"net/http/httputil"
-	"net/url"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
+  "bytes"
+  "context"
+  "crypto/tls"
+  "fmt"
+  "io"
+  "io/ioutil"
+  "net"
+  "net/http"
+  "net/http/cookiejar"
+  "net/http/httputil"
+  "net/url"
+  "os"
+  "regexp"
+  "strconv"
+  "strings"
+  "sync"
+  "time"
 
-	"github.com/pkg/errors"
-	"github.com/projectdiscovery/fastdialer/fastdialer"
-	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/nuclei/v2/internal/bufwriter"
-	"github.com/projectdiscovery/nuclei/v2/internal/progress"
-	"github.com/projectdiscovery/nuclei/v2/internal/tracelog"
-	"github.com/projectdiscovery/nuclei/v2/pkg/colorizer"
-	"github.com/projectdiscovery/nuclei/v2/pkg/generators"
-	"github.com/projectdiscovery/nuclei/v2/pkg/matchers"
-	projetctfile "github.com/projectdiscovery/nuclei/v2/pkg/projectfile"
-	"github.com/projectdiscovery/nuclei/v2/pkg/requests"
-	"github.com/projectdiscovery/nuclei/v2/pkg/templates"
-	"github.com/projectdiscovery/rawhttp"
-	"github.com/projectdiscovery/retryablehttp-go"
-	"github.com/remeh/sizedwaitgroup"
-	"go.uber.org/ratelimit"
-	"golang.org/x/net/proxy"
+  "github.com/pkg/errors"
+  "github.com/projectdiscovery/fastdialer/fastdialer"
+  "github.com/projectdiscovery/gologger"
+  "github.com/projectdiscovery/nuclei/v2/internal/bufwriter"
+  "github.com/projectdiscovery/nuclei/v2/internal/progress"
+  "github.com/projectdiscovery/nuclei/v2/internal/tracelog"
+  "github.com/projectdiscovery/nuclei/v2/pkg/colorizer"
+  "github.com/projectdiscovery/nuclei/v2/pkg/generators"
+  "github.com/projectdiscovery/nuclei/v2/pkg/matchers"
+  projetctfile "github.com/projectdiscovery/nuclei/v2/pkg/projectfile"
+  "github.com/projectdiscovery/nuclei/v2/pkg/requests"
+  "github.com/projectdiscovery/nuclei/v2/pkg/templates"
+  "github.com/projectdiscovery/rawhttp"
+  "github.com/projectdiscovery/retryablehttp-go"
+  "github.com/remeh/sizedwaitgroup"
+  "go.uber.org/ratelimit"
+  "golang.org/x/net/proxy"
 )
 
 const (
@@ -402,7 +401,7 @@ func (e *HTTPExecuter) ExecuteHTTP(p *progress.Progress, reqURL string) *Result 
 func (e *HTTPExecuter) handleHTTP(reqURL string, request *requests.HTTPRequest, dynamicvalues map[string]interface{}, result *Result, format string) error {
 	select {
 	case <- e.ctx.Done():
-		log.Info().Msg("Skip inside handleHTTP")
+		//log.Info().Msg("Skip inside handleHTTP")
 		return errors.New("Canceled request")
 	default:
 	}

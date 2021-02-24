@@ -1,26 +1,25 @@
 package runner
 
 import (
-	"context"
-	"fmt"
-	"github.com/rs/zerolog/log"
-	"net/http/cookiejar"
-	"os"
-	"path"
-	"path/filepath"
-	"strings"
+  "context"
+  "fmt"
+  "net/http/cookiejar"
+  "os"
+  "path"
+  "path/filepath"
+  "strings"
 
-	tengo "github.com/d5/tengo/v2"
-	"github.com/d5/tengo/v2/stdlib"
-	"github.com/karrick/godirwalk"
-	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/nuclei/v2/internal/progress"
-	"github.com/projectdiscovery/nuclei/v2/pkg/atomicboolean"
-	"github.com/projectdiscovery/nuclei/v2/pkg/executer"
-	"github.com/projectdiscovery/nuclei/v2/pkg/requests"
-	"github.com/projectdiscovery/nuclei/v2/pkg/templates"
-	"github.com/projectdiscovery/nuclei/v2/pkg/workflows"
-	"github.com/remeh/sizedwaitgroup"
+  tengo "github.com/d5/tengo/v2"
+  "github.com/d5/tengo/v2/stdlib"
+  "github.com/karrick/godirwalk"
+  "github.com/projectdiscovery/gologger"
+  "github.com/projectdiscovery/nuclei/v2/internal/progress"
+  "github.com/projectdiscovery/nuclei/v2/pkg/atomicboolean"
+  "github.com/projectdiscovery/nuclei/v2/pkg/executer"
+  "github.com/projectdiscovery/nuclei/v2/pkg/requests"
+  "github.com/projectdiscovery/nuclei/v2/pkg/templates"
+  "github.com/projectdiscovery/nuclei/v2/pkg/workflows"
+  "github.com/remeh/sizedwaitgroup"
 )
 
 // workflowTemplates contains the initialized workflow templates per template group
@@ -143,13 +142,6 @@ func (r *Runner) processWorkflowWithList(p *progress.Progress, workflow *workflo
 
 	r.hm.Scan(func(k, _ []byte) error {
 		targetURL := string(k)
-
-		select {
-		case <-r.Ctx.Done():
-			log.Info().Msg("aaaaaaaaaaaaaaa skip " + targetURL)
-			return nil
-		default:
-		}
 
 		wg.Add()
 
