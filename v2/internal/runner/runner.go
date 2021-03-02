@@ -179,10 +179,16 @@ func New(options *Options) (*Runner, error) {
 		runner.output = output
 	}
 
-	// KOL: Creates the progress tracking object
-	runner.ProgressChannel = make(chan types.ProgressEvent, 10)
-	runner.JsonOutputChannel = make(chan []byte, 10)
-	runner.progress = progress.NewProgress(options.EnableProgressBar, runner.ProgressChannel)
+  // KOL: Creates the progress tracking object
+  runner.ProgressChannel = make(chan types.ProgressEvent, 10)
+  runner.JsonOutputChannel = make(chan []byte, 10)
+
+	// Creates the progress tracking object
+	var progressErr error
+	runner.progress, progressErr = progress.NewProgress(options.EnableProgressBar, options.Metrics, options.MetricsPort, runner.ProgressChannel)
+	if progressErr != nil {
+		return nil, progressErr
+	}
 
 	// create project file if requested or load existing one
 	if options.Project {

@@ -1,13 +1,14 @@
 package runner
 
 import (
-  "context"
-  "fmt"
-  "net/http/cookiejar"
-  "os"
-  "path"
-  "path/filepath"
-  "strings"
+	"context"
+	"fmt"
+	"net/http/cookiejar"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
+	"time"
 
   tengo "github.com/d5/tengo/v2"
   "github.com/d5/tengo/v2/stdlib"
@@ -27,6 +28,8 @@ type workflowTemplates struct {
 	Name      string
 	Templates []*workflows.Template
 }
+
+var sandboxedModules = []string{"math", "text", "rand", "fmt", "json", "base64", "hex", "enum"}
 
 // processTemplateWithList processes a template and runs the enumeration on all the targets
 func (r *Runner) processTemplateWithList(p *progress.Progress, template *templates.Template, request interface{}) bool {
@@ -63,6 +66,7 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 			Retries:          r.options.Retries,
 			ProxyURL:         r.options.ProxyURL,
 			ProxySocksURL:    r.options.ProxySocksURL,
+			RandomAgent:      r.options.RandomAgent,
 			CustomHeaders:    r.options.CustomHeaders,
 			JSON:             r.options.JSON,
 			JSONRequests:     r.options.JSONRequests,
@@ -95,7 +99,6 @@ func (r *Runner) processTemplateWithList(p *progress.Progress, template *templat
 
 	r.hm.Scan(func(k, _ []byte) error {
 		URL := string(k)
-
 		wg.Add()
 		go func(URL string) {
 			defer wg.Done()
@@ -133,26 +136,26 @@ func (r *Runner) processWorkflowWithList(p *progress.Progress, workflow *workflo
 	workflowTemplatesList, err := r.preloadWorkflowTemplates(p, workflow)
 	if err != nil {
 		gologger.Warningf("Could not preload templates for workflow %s: %s\n", workflow.ID, err)
-		return result
+		return false
 	}
-
 	logicBytes := []byte(workflow.Logic)
 
 	wg := sizedwaitgroup.New(r.options.BulkSize)
-
 	r.hm.Scan(func(k, _ []byte) error {
 		targetURL := string(k)
-
 		wg.Add()
 
 		go func(targetURL string) {
 			defer wg.Done()
 
 			script := tengo.NewScript(logicBytes)
-			script.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
+			if !r.options.Sandbox {
+				script.SetImports(stdlib.GetModuleMap(stdlib.AllModuleNames()...))
+			} else {
+				script.SetImports(stdlib.GetModuleMap(sandboxedModules...))
+			}
 
 			variables := make(map[string]*workflows.NucleiVar)
-
 			for _, workflowTemplate := range *workflowTemplatesList {
 				name := workflowTemplate.Name
 				variable := &workflows.NucleiVar{Templates: workflowTemplate.Templates, URL: targetURL}
@@ -164,7 +167,10 @@ func (r *Runner) processWorkflowWithList(p *progress.Progress, workflow *workflo
 				variables[name] = variable
 			}
 
-			_, err := script.RunContext(context.Background())
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(r.options.MaxWorkflowDuration)*time.Minute)
+			defer cancel()
+
+			_, err := script.RunContext(ctx)
 			if err != nil {
 				gologger.Errorf("Could not execute workflow '%s': %s\n", workflow.ID, err)
 			}
@@ -232,6 +238,7 @@ func (r *Runner) preloadWorkflowTemplates(p *progress.Progress, workflow *workfl
 					Retries:          r.options.Retries,
 					ProxyURL:         r.options.ProxyURL,
 					ProxySocksURL:    r.options.ProxySocksURL,
+					RandomAgent:      r.options.RandomAgent,
 					CustomHeaders:    r.options.CustomHeaders,
 					JSON:             r.options.JSON,
 					JSONRequests:     r.options.JSONRequests,
@@ -305,6 +312,7 @@ func (r *Runner) preloadWorkflowTemplates(p *progress.Progress, workflow *workfl
 						Retries:       r.options.Retries,
 						ProxyURL:      r.options.ProxyURL,
 						ProxySocksURL: r.options.ProxySocksURL,
+						RandomAgent:   r.options.RandomAgent,
 						CustomHeaders: r.options.CustomHeaders,
 						CookieJar:     jar,
 						TraceLog:      r.traceLog,
