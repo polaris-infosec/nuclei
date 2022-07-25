@@ -18,12 +18,11 @@ require (
 	github.com/projectdiscovery/fastdialer v0.0.2
 	github.com/projectdiscovery/gologger v1.0.1
 	github.com/projectdiscovery/hmap v0.0.1
-	github.com/projectdiscovery/nuclei/v2 v2.2.0
 	github.com/projectdiscovery/rawhttp v0.0.4
 	github.com/projectdiscovery/retryabledns v1.0.5
 	github.com/projectdiscovery/retryablehttp-go v1.0.1
 	github.com/remeh/sizedwaitgroup v1.0.0
-	github.com/segmentio/ksuid v1.0.3
+	github.com/segmentio/ksuid v1.0.4
 	github.com/spaolacci/murmur3 v1.1.0
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/ratelimit v0.1.0
