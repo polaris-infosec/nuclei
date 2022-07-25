@@ -8,7 +8,7 @@ require (
 	github.com/corpix/uarand v0.1.1
 	github.com/d5/tengo/v2 v2.6.2
 	github.com/google/go-github/v32 v32.1.0
-	github.com/json-iterator/go v1.1.10
+	github.com/json-iterator/go v1.1.12
 	github.com/karrick/godirwalk v1.16.1
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/miekg/dns v1.1.35
@@ -18,7 +18,6 @@ require (
 	github.com/projectdiscovery/fastdialer v0.0.2
 	github.com/projectdiscovery/gologger v1.0.1
 	github.com/projectdiscovery/hmap v0.0.1
-	github.com/projectdiscovery/nuclei/v2 v2.2.0
 	github.com/projectdiscovery/rawhttp v0.0.4
 	github.com/projectdiscovery/retryabledns v1.0.5
 	github.com/projectdiscovery/retryablehttp-go v1.0.1
